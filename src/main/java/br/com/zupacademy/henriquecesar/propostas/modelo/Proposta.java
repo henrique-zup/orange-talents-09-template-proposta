@@ -28,6 +28,9 @@ public class Proposta {
 	@Email
 	@NotBlank
 	private String email;
+	
+	@NotBlank
+	private String nome;
 
 	@NotBlank
 	private String endereco;
@@ -39,10 +42,11 @@ public class Proposta {
 	public Proposta() {
 	}
 
-	public Proposta(String documento, @Email @NotBlank String email, @NotBlank String endereco,
-	        @NotNull BigDecimal salario) {
+	public Proposta(String documento, @Email @NotBlank String email, @NotBlank String nome, 
+			@NotBlank String endereco, @NotNull BigDecimal salario) {
 		this.documento = documento;
 		this.email = email;
+		this.nome = nome;
 		this.endereco = endereco;
 		this.salario = salario;
 	}
@@ -51,6 +55,7 @@ public class Proposta {
 		return new Proposta(
 			request.getDocumento(),
 			request.getEmail(),
+			request.getNome(),
 			request.getEndereco(),
 			request.getSalario()
 		);
@@ -59,6 +64,10 @@ public class Proposta {
 	public Long getId() {
 		return id;
 	}
+	
+	public String getNome() {
+		return nome;
+	};
 
     public boolean existeProposta(PropostaRepository propostaRepository) {
         return propostaRepository.findByDocumento(documento).isPresent();

@@ -19,6 +19,9 @@ public class NovaPropostaRequest {
 	private String email;
 
 	@NotBlank
+	private String nome;
+
+	@NotBlank
 	private String endereco;
 
 	@NotNull
@@ -33,6 +36,10 @@ public class NovaPropostaRequest {
 		return email;
 	}
 
+	public String getNome() {
+		return nome;
+	}
+
 	public String getEndereco() {
 		return endereco;
 	}
@@ -41,13 +48,13 @@ public class NovaPropostaRequest {
 		return salario;
 	}
 
-	public NovaPropostaRequest(String documento, @Email @NotBlank String email, @NotBlank String endereco,
-	        @NotNull BigDecimal salario) {
+	public NovaPropostaRequest(String documento, @Email @NotBlank String email, @NotBlank String nome,
+			@NotBlank String endereco, @NotNull BigDecimal salario) {
 		this.documento = documento;
 		this.email = email;
+		this.nome = nome;
 		this.endereco = endereco;
 		this.salario = salario;
 	}
-	
 
 }

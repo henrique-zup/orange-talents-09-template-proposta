@@ -53,6 +53,7 @@ public class PropostaControllerTest {
 		NovaPropostaRequest request = new NovaPropostaRequest(
 			"01234567890",
 			"email@exemplo.com",
+			"Nome Exemplo",
 			"Rua Exemplo 103",
 			new BigDecimal(2500)
 		);
@@ -75,6 +76,7 @@ public class PropostaControllerTest {
 		NovaPropostaRequest request = new NovaPropostaRequest(
 			"00000000000",
 			"email@exemplo.com",
+			"Nome Exemplo",
 			"Rua Exemplo 103",
 			new BigDecimal(2500)
 		);
@@ -87,6 +89,20 @@ public class PropostaControllerTest {
 		NovaPropostaRequest request = new NovaPropostaRequest(
 			"01234567890",
 			"emailinvalido.com",
+			"Nome Exemplo",
+			"Rua Exemplo 103",
+			new BigDecimal(2500)
+		);
+		String requestJson = mapper.writeValueAsString(request);
+		fazRequisicaoEEsperaBadRequest(requestJson);
+	}
+	
+	@Test
+	public void deveRetornarBadRequestComNomeEmBranco() throws Exception {
+		NovaPropostaRequest request = new NovaPropostaRequest(
+			"01234567890",
+			"email@exemplo.com",
+			"",
 			"Rua Exemplo 103",
 			new BigDecimal(2500)
 		);
@@ -99,6 +115,7 @@ public class PropostaControllerTest {
 		NovaPropostaRequest request = new NovaPropostaRequest(
 			"01234567890",
 			"email@exemplo.com",
+			"Nome Exemplo",
 			"",
 			new BigDecimal(2500)
 		);
@@ -111,6 +128,7 @@ public class PropostaControllerTest {
 		NovaPropostaRequest request = new NovaPropostaRequest(
 			"01234567890",
 			"email@exemplo.com",
+			"Nome Exemplo",
 			"Rua Exemplo 103",
 			new BigDecimal(-2500)
 		);
@@ -124,6 +142,7 @@ public class PropostaControllerTest {
 		NovaPropostaRequest propostaExistente = new NovaPropostaRequest(
 			"03115710000155",
 			"propostaExistente@exemplo.com",
+			"Nome Exemplo",
 			"Rua Exemplo 103",
 			new BigDecimal(25000)
 		);
@@ -133,6 +152,7 @@ public class PropostaControllerTest {
 		NovaPropostaRequest novaProposta = new NovaPropostaRequest(
 			"03115710000155",
 			"propostaExistente@exemplo.com",
+			"Nome Exemplo",
 			"Rua Exemplo 103",
 			new BigDecimal(25000)
 		);
