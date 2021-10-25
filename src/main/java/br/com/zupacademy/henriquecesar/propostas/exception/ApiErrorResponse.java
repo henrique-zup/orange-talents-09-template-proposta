@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import br.com.zupacademy.henriquecesar.propostas.exception.business.BusinessException;
+
 public class ApiErrorResponse {
     
     private String erro;
@@ -40,5 +42,9 @@ public class ApiErrorResponse {
             response.adicionaCampo(fe.getField(), fe.getDefaultMessage());
         });
         return response;
+    }
+
+    public static ApiErrorResponse buildFromBusinessException(BusinessException ex) {
+        return new ApiErrorResponse(ex.getErro(), ex.getCodigoInterno());
     }
 }
