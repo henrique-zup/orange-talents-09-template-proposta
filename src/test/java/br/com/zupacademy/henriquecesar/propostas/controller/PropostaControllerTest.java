@@ -21,6 +21,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaPropostaRequest;
+import br.com.zupacademy.henriquecesar.propostas.modelo.Proposta;
+import br.com.zupacademy.henriquecesar.propostas.repository.PropostaRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,6 +35,9 @@ public class PropostaControllerTest {
 	
 	@Autowired
 	private ObjectMapper mapper;
+	
+	@Autowired
+	private PropostaRepository propostaRepository;
 	
 	private void fazRequisicaoEEsperaBadRequest(String json) throws Exception {
 		URI uri = new URI("/propostas");
@@ -111,6 +116,36 @@ public class PropostaControllerTest {
 		);
 		String requestJson = mapper.writeValueAsString(request);
 		fazRequisicaoEEsperaBadRequest(requestJson);
+	}
+	
+	@Test
+	public void deveProibirCadastroDePropostaComMesmoDocumento() throws Exception {
+		// inicialmente cadastra uma proposta no banco
+		NovaPropostaRequest propostaExistente = new NovaPropostaRequest(
+			"03115710000155",
+			"propostaExistente@exemplo.com",
+			"Rua Exemplo 103",
+			new BigDecimal(25000)
+		);
+		propostaRepository.save(Proposta.buildProposta(propostaExistente));
+
+		// cria nova proposta
+		NovaPropostaRequest novaProposta = new NovaPropostaRequest(
+			"03115710000155",
+			"propostaExistente@exemplo.com",
+			"Rua Exemplo 103",
+			new BigDecimal(25000)
+		);
+		
+		// performa requisicao
+		URI uri = new URI("/propostas");
+		String requestJson = mapper.writeValueAsString(novaProposta);
+				
+		mockMvc.perform(MockMvcRequestBuilders.post(uri)
+				.content(requestJson)
+				.contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.status()
+				.is(422));
 	}
 
 }
