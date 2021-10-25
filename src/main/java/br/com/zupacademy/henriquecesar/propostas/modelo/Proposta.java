@@ -3,6 +3,8 @@ package br.com.zupacademy.henriquecesar.propostas.modelo;
 import java.math.BigDecimal;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -11,6 +13,9 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import br.com.zupacademy.henriquecesar.propostas.client.analise_financeira.AnaliseFinanceiraClient;
+import br.com.zupacademy.henriquecesar.propostas.client.analise_financeira.dto.NovaAnaliseFinanceiraRequest;
+import br.com.zupacademy.henriquecesar.propostas.client.analise_financeira.dto.NovaAnaliseFinanceiraResponse;
 import br.com.zupacademy.henriquecesar.propostas.common.annotation.CpfOrCnpj;
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaPropostaRequest;
 import br.com.zupacademy.henriquecesar.propostas.repository.PropostaRepository;
@@ -37,6 +42,9 @@ public class Proposta {
 
 	@NotNull
 	private BigDecimal salario;
+	
+	@Enumerated(EnumType.STRING)
+	private PropostaStatus status;
 
 	@Deprecated
 	public Proposta() {
@@ -65,6 +73,10 @@ public class Proposta {
 		return id;
 	}
 	
+	public String getDocumento() {
+		return documento;
+	}
+	
 	public String getNome() {
 		return nome;
 	};
@@ -72,5 +84,12 @@ public class Proposta {
     public boolean existeProposta(PropostaRepository propostaRepository) {
         return propostaRepository.findByDocumento(documento).isPresent();
     }
+
+	public void realizaAnaliseFinanceira(AnaliseFinanceiraClient analiseFinanceiraClient, PropostaRepository repository) {
+		NovaAnaliseFinanceiraResponse response = analiseFinanceiraClient
+				.realizarAnaliseFinanceira(new NovaAnaliseFinanceiraRequest(this));
+		status = response.getPropostaStatus();
+		repository.save(this);
+	}
 
 }
