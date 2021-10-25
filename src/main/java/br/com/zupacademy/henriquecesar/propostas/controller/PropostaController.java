@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaPropostaRequest;
+import br.com.zupacademy.henriquecesar.propostas.exception.business.PropostaJaExisteException;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Proposta;
 import br.com.zupacademy.henriquecesar.propostas.repository.PropostaRepository;
 
@@ -29,6 +30,11 @@ public class PropostaController {
 	public ResponseEntity<?> criarProposta(@RequestBody @Valid NovaPropostaRequest request,
 			UriComponentsBuilder uriBuilder) {
 		Proposta proposta = Proposta.buildProposta(request);
+		
+		if (proposta.existeProposta(propostaRepository)) {
+		    throw new PropostaJaExisteException();
+		}
+		
 		propostaRepository.save(proposta);
 		
 		URI location = uriBuilder.replacePath("/propostas/{id}")
