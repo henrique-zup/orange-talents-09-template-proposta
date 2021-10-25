@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 
 import br.com.zupacademy.henriquecesar.propostas.common.annotation.CpfOrCnpj;
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaPropostaRequest;
+import br.com.zupacademy.henriquecesar.propostas.repository.PropostaRepository;
 
 @Entity
 public class Proposta {
@@ -58,5 +59,9 @@ public class Proposta {
 	public Long getId() {
 		return id;
 	}
+
+    public boolean existeProposta(PropostaRepository propostaRepository) {
+        return propostaRepository.findByDocumento(documento).isPresent();
+    }
 
 }
