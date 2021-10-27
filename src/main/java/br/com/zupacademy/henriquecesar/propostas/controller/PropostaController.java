@@ -1,7 +1,6 @@
 package br.com.zupacademy.henriquecesar.propostas.controller;
 
 import java.net.URI;
-import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -19,6 +18,7 @@ import br.com.zupacademy.henriquecesar.propostas.client.analise_financeira.Anali
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaPropostaRequest;
 import br.com.zupacademy.henriquecesar.propostas.dto.response.PropostaStatusResponse;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.PropostaJaExisteException;
+import br.com.zupacademy.henriquecesar.propostas.exception.business.PropostaNaoEncontradaException;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Proposta;
 import br.com.zupacademy.henriquecesar.propostas.repository.PropostaRepository;
 
@@ -55,16 +55,11 @@ public class PropostaController {
 	}
 	
 	@GetMapping("/{idProposta}")
-	public ResponseEntity<?> consultarProposta(@PathVariable Long idProposta) {
-		Optional<Proposta> proposta = propostaRepository.findById(idProposta);
+	public PropostaStatusResponse consultarProposta(@PathVariable Long idProposta) {
+		Proposta proposta = propostaRepository.findById(idProposta)
+				.orElseThrow(PropostaNaoEncontradaException::new);
 		
-		if (proposta.isEmpty()) {
-			return ResponseEntity.notFound().build();
-		}
-		
-		PropostaStatusResponse response = new PropostaStatusResponse(proposta.get());
-		
-		return ResponseEntity.ok(response);
+		return new PropostaStatusResponse(proposta);
 	}
 
 }
