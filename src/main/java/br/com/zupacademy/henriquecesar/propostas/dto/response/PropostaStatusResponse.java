@@ -19,4 +19,7 @@ public class PropostaStatusResponse {
 		status = proposta.getStatus();
 	}
 
+	@Deprecated
+	public PropostaStatusResponse() {
+	}
 }
