@@ -1,11 +1,14 @@
 package br.com.zupacademy.henriquecesar.propostas.controller;
 
 import java.net.URI;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.zupacademy.henriquecesar.propostas.client.analise_financeira.AnaliseFinanceiraClient;
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaPropostaRequest;
+import br.com.zupacademy.henriquecesar.propostas.dto.response.PropostaStatusResponse;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.PropostaJaExisteException;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Proposta;
 import br.com.zupacademy.henriquecesar.propostas.repository.PropostaRepository;
@@ -48,6 +52,19 @@ public class PropostaController {
 				.buildAndExpand(proposta.getId()).toUri();
 		
 		return ResponseEntity.created(location).build();
+	}
+	
+	@GetMapping("/{idProposta}")
+	public ResponseEntity<?> consultarProposta(@PathVariable Long idProposta) {
+		Optional<Proposta> proposta = propostaRepository.findById(idProposta);
+		
+		if (proposta.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+		
+		PropostaStatusResponse response = new PropostaStatusResponse(proposta.get());
+		
+		return ResponseEntity.ok(response);
 	}
 
 }
