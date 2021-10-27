@@ -87,6 +87,10 @@ public class Proposta {
 		return nome;
 	};
 
+	public PropostaStatus getStatus() {
+		return status;
+	}
+
     public boolean existeProposta(PropostaRepository propostaRepository) {
         return propostaRepository.findByDocumento(documento).isPresent();
     }
