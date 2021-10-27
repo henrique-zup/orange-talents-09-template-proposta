@@ -19,6 +19,7 @@ import br.com.zupacademy.henriquecesar.propostas.client.analise_financeira.dto.N
 import br.com.zupacademy.henriquecesar.propostas.common.annotation.CpfOrCnpj;
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaPropostaRequest;
 import br.com.zupacademy.henriquecesar.propostas.repository.PropostaRepository;
+import feign.FeignException;
 
 @Entity
 public class Proposta {
@@ -86,9 +87,14 @@ public class Proposta {
     }
 
 	public void realizaAnaliseFinanceira(AnaliseFinanceiraClient analiseFinanceiraClient, PropostaRepository repository) {
-		NovaAnaliseFinanceiraResponse response = analiseFinanceiraClient
-				.realizarAnaliseFinanceira(new NovaAnaliseFinanceiraRequest(this));
-		status = response.getPropostaStatus();
+		try {
+			NovaAnaliseFinanceiraResponse response = analiseFinanceiraClient
+					.realizarAnaliseFinanceira(new NovaAnaliseFinanceiraRequest(this));
+			status = response.getPropostaStatus();
+		} catch(FeignException.UnprocessableEntity ex) {
+			status = PropostaStatus.NAO_ELEGIVEL;
+		
+		}
 		repository.save(this);
 	}
 
