@@ -2,12 +2,14 @@ package br.com.zupacademy.henriquecesar.propostas.modelo;
 
 import java.math.BigDecimal;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -43,6 +45,9 @@ public class Proposta {
 
 	@NotNull
 	private BigDecimal salario;
+	
+	@OneToOne(cascade = CascadeType.ALL)
+	private Cartao cartao;
 	
 	@Enumerated(EnumType.STRING)
 	private PropostaStatus status;
@@ -95,6 +100,11 @@ public class Proposta {
 			status = PropostaStatus.NAO_ELEGIVEL;
 		
 		}
+		repository.save(this);
+	}
+
+	public void adicionaCartao(Cartao cartao, PropostaRepository repository) {
+		this.cartao = cartao;
 		repository.save(this);
 	}
 
