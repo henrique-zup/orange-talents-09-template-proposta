@@ -1,10 +1,15 @@
 package br.com.zupacademy.henriquecesar.propostas.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.net.URI;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -17,11 +22,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import br.com.zupacademy.henriquecesar.propostas.client.analise_financeira.AnaliseFinanceiraClient;
+import br.com.zupacademy.henriquecesar.propostas.client.analise_financeira.dto.NovaAnaliseFinanceiraResponse;
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaPropostaRequest;
+import br.com.zupacademy.henriquecesar.propostas.dto.response.PropostaStatusResponse;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Proposta;
+import br.com.zupacademy.henriquecesar.propostas.modelo.PropostaStatus;
 import br.com.zupacademy.henriquecesar.propostas.repository.PropostaRepository;
 
 @SpringBootTest
@@ -46,6 +56,27 @@ public class PropostaControllerTest {
 			.contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.status()
 			.is(400));
+	}
+	
+	@BeforeEach
+	private void beforeEach() {
+		propostaRepository.deleteAll();
+	}
+	
+	private Proposta adicionarPropostaNoBanco(NovaPropostaRequest request, PropostaStatus status) {
+		// Mock AnaliseFinanceiraResponse
+		NovaAnaliseFinanceiraResponse afResponse = mock(NovaAnaliseFinanceiraResponse.class);
+		when(afResponse.getPropostaStatus()).thenReturn(status);
+		
+		// Mock AnaliseFinanceiraClient
+		AnaliseFinanceiraClient mockClient = mock(AnaliseFinanceiraClient.class);
+		when(mockClient.realizarAnaliseFinanceira(any())).thenReturn(afResponse);
+		
+		Proposta proposta = Proposta.buildProposta(request);
+		propostaRepository.save(proposta);
+		
+		proposta.realizaAnaliseFinanceira(mockClient, propostaRepository);
+		return proposta;
 	}
 
 	@Test
@@ -166,6 +197,48 @@ public class PropostaControllerTest {
 				.contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.status()
 				.is(422));
+	}
+	
+	@Test
+	public void deveConsultarStatusDeProposta() throws Exception {
+		// CADASTRA UMA PROPOSTA NO BANCO
+		NovaPropostaRequest propostaExistente = new NovaPropostaRequest(
+			"03115710000155",
+			"propostaExistente@exemplo.com",
+			"Nome Exemplo",
+			"Rua Exemplo 103",
+			new BigDecimal(25000)
+		);
+		
+		PropostaStatus propostaStatus = PropostaStatus.ELEGIVEL;
+		Proposta proposta = adicionarPropostaNoBanco(propostaExistente, propostaStatus);
+		
+		// PERFORMA REQUISICAO		
+		URI uri = UriComponentsBuilder
+				.fromUriString("/propostas/{id}")
+				.buildAndExpand(proposta.getId()).toUri();
+		
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(uri))
+			.andExpect(MockMvcResultMatchers.status()
+			.is(200))
+			.andReturn();
+		
+		String content = result.getResponse().getContentAsString();
+		PropostaStatusResponse response = mapper.readValue(content, PropostaStatusResponse.class);
+		assertEquals(propostaStatus, response.getStatus());
+	}
+	
+	@Test
+	public void naoDeveRetornarStatusDePropostaInexistente() throws Exception {
+		Integer idInexistente = 0;
+		
+		URI uri = UriComponentsBuilder
+				.fromUriString("/propostas/{id}")
+				.buildAndExpand(idInexistente).toUri();
+		
+		mockMvc.perform(MockMvcRequestBuilders.get(uri))
+			.andExpect(MockMvcResultMatchers.status()
+			.is(404));
 	}
 
 }
