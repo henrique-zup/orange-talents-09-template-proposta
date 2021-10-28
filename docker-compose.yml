@@ -1,0 +1,29 @@
+version: '3'
+services:
+
+  propostas_api:
+    container_name: propostas_api
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: henriquecesarzup/propostas_api
+    ports:
+      - 8081:8080
+    depends_on:
+      - propostas_db
+
+  propostas_db:
+      container_name: propostas_db
+      image: mysql:8.0
+      command: --default-authentication-plugin=mysql_native_password
+      restart: always
+      ports:
+        - 3636:3306
+      environment:
+        MYSQL_DATABASE: propostas_db
+        MYSQL_ROOT_PASSWORD: root
+      volumes:
+        - mysql-volume-propostas_db:/var/lib/mysql
+
+volumes:
+  mysql-volume-propostas_db:
