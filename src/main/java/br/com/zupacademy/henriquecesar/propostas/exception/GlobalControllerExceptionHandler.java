@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import br.com.zupacademy.henriquecesar.propostas.exception.business.BusinessException;
+import br.com.zupacademy.henriquecesar.propostas.exception.business.CartaoNaoEncontradoException;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.PropostaJaExisteException;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.PropostaNaoEncontradaException;
 
@@ -25,7 +26,7 @@ public class GlobalControllerExceptionHandler {
         return ApiErrorResponse.buildFromBusinessException(ex);
     }
     
-    @ExceptionHandler(value = { PropostaNaoEncontradaException.class })
+    @ExceptionHandler(value = { PropostaNaoEncontradaException.class, CartaoNaoEncontradoException.class })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiErrorResponse requestNotFoundException(BusinessException ex) {
         return ApiErrorResponse.buildFromBusinessException(ex);
