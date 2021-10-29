@@ -2,19 +2,23 @@ package br.com.zupacademy.henriquecesar.propostas.modelo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Range;
 
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoCartaoResponse;
+import br.com.zupacademy.henriquecesar.propostas.repository.CartaoRepository;
 
 @Entity
 public class Cartao {
@@ -39,6 +43,9 @@ public class Cartao {
 	@NotNull 
 	@Range(min = 1, max=31)
 	private Integer diaVencimento;
+	
+	@OneToMany(mappedBy = "cartao", cascade = CascadeType.MERGE)
+	private List<Biometria> biometrias;
 
 	@Deprecated
 	public Cartao() {
@@ -67,5 +74,15 @@ public class Cartao {
 					numeroCartao.substring(0, 2), numeroCartao.substring(15));
 		}
 		return numeroCartao;
+	}
+
+	public UUID getId() {
+		return id;
+	}
+	
+	public Biometria adicionarBiometria(Biometria biometria, CartaoRepository repository) {
+		this.biometrias.add(biometria);
+		repository.save(this);
+		return biometrias.get(biometrias.size() - 1);
 	}
 }
