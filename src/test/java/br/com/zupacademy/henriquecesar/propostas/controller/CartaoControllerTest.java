@@ -1,0 +1,104 @@
+package br.com.zupacademy.henriquecesar.propostas.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoCartaoResponse;
+import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoCartaoResponseDiaVencimento;
+import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaBiometriaRequest;
+import br.com.zupacademy.henriquecesar.propostas.modelo.Cartao;
+import br.com.zupacademy.henriquecesar.propostas.repository.CartaoRepository;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@AutoConfigureDataJpa
+@TestInstance(Lifecycle.PER_CLASS)
+class CartaoControllerTest {
+
+	private final String BASE64 = "SGVsbG8gT3JhbmdlVGFsZW50cyE=";
+	private final String URI = "/cartoes";
+	
+	@Autowired
+	private MockMvc mvc;
+	
+	@Autowired
+	private CartaoRepository cartaoRepository;
+	
+	private Cartao cartaoAtual;
+	
+	@BeforeEach
+	private void beforeEach() {
+		NovoCartaoResponse cartaoResponse = new NovoCartaoResponse(
+				"1234-5679-9101-1121", LocalDateTime.now(),
+				"Nome Titular", new NovoCartaoResponseDiaVencimento(1),
+				new BigDecimal("850.00"), "1");
+			
+		cartaoAtual = Cartao.buildCartao(cartaoResponse);
+		cartaoRepository.save(cartaoAtual);
+	}
+
+	@Test
+	void deveCadastrarBiometria() throws Exception {
+		NovaBiometriaRequest body = new NovaBiometriaRequest(BASE64);
+		
+		MockHttpServletRequestBuilder request = 
+			post(URI.concat(String.format("/%s/adicionarBiometria", cartaoAtual.getId())))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper().writeValueAsString(body));
+		
+		mvc.perform(request).andExpect(status().isCreated())
+			.andExpect(header().exists("Location"))
+			.andExpect(redirectedUrlPattern(String
+				.format("**/%s/{spring:[0-9]+}", cartaoAtual.getId())
+			)
+		);
+	}
+	
+	@Test
+	void naoDeveCadastrarBiometriaEmCartaoInexistente() throws Exception {
+		NovaBiometriaRequest body = new NovaBiometriaRequest(BASE64);
+		String idInexistente = "2073789c-efef-450f-b8b1-2d7149d57f85";
+		
+		MockHttpServletRequestBuilder request = 
+			post(URI.concat(String.format("/%s/adicionarBiometria", idInexistente)))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper().writeValueAsString(body));
+			
+		mvc.perform(request).andExpect(status().isNotFound());
+	}
+	
+	@ParameterizedTest
+	@NullAndEmptySource
+	void naoDeveCadastrarBiometriaComFingerprintInvalida(String fingerPrint) throws Exception {
+		NovaBiometriaRequest body = new NovaBiometriaRequest(fingerPrint);
+		
+		MockHttpServletRequestBuilder request = 
+			post(URI.concat(String.format("/%s/adicionarBiometria", cartaoAtual.getId())))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper().writeValueAsString(body));
+			
+		mvc.perform(request).andExpect(status().isBadRequest());
+	}
+
+}
