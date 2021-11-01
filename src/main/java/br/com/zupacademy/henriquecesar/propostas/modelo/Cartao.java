@@ -8,6 +8,7 @@ import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -46,6 +47,9 @@ public class Cartao {
 	
 	@OneToMany(mappedBy = "cartao", cascade = CascadeType.MERGE)
 	private List<Biometria> biometrias;
+	
+	@OneToMany(mappedBy = "cartao", cascade = CascadeType.MERGE)
+	private List<BloqueioCartao> bloqueios;
 
 	@Deprecated
 	public Cartao() {
@@ -84,5 +88,18 @@ public class Cartao {
 		this.biometrias.add(biometria);
 		repository.save(this);
 		return biometrias.get(biometrias.size() - 1);
+	}
+
+	public BloqueioCartao bloquear(BloqueioCartao bloqueioCartao, CartaoRepository repository) {
+		this.bloqueios.add(bloqueioCartao);
+		repository.save(this);
+		return bloqueios.get(bloqueios.size() - 1);
+	}
+
+	public boolean isBloqueado(EntityManager manager) {
+		return !manager
+		.createQuery("SELECT b from BloqueioCartao b WHERE b.cartao = :cartao AND b.ativo = true")
+		.setParameter("cartao", this)
+		.getResultList().isEmpty();
 	}
 }
