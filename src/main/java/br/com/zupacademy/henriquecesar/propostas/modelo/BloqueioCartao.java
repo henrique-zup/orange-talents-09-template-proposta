@@ -34,6 +34,9 @@ public class BloqueioCartao {
 	
 	@NotNull
 	private boolean ativo;
+	
+	@NotNull
+	private boolean sincronizado;
 
 	@Deprecated
 	public BloqueioCartao() {
@@ -48,6 +51,18 @@ public class BloqueioCartao {
 
 	public boolean isAtivo() {
 		return ativo;
+	}
+
+	public Cartao getCartao() {
+		return cartao;
+	}
+
+	public boolean isSincronizado() {
+		return sincronizado;
+	}
+
+	public void setSincronizado(boolean sincronizado) {
+		this.sincronizado = sincronizado;
 	}
 }
 
