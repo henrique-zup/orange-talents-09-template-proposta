@@ -6,8 +6,11 @@ import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.SistemaCartoesClient;
+import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoBloqueioCartaoRequest;
+import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoBloqueioCartaoResponse;
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaBiometriaRequest;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.CartaoBloqueadoException;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.CartaoNaoEncontradoException;
@@ -23,6 +29,7 @@ import br.com.zupacademy.henriquecesar.propostas.modelo.Biometria;
 import br.com.zupacademy.henriquecesar.propostas.modelo.BloqueioCartao;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Cartao;
 import br.com.zupacademy.henriquecesar.propostas.repository.CartaoRepository;
+import feign.FeignException;
 
 
 @RestController
@@ -31,10 +38,14 @@ public class CartaoController {
 
 	private CartaoRepository cartaoRepository;
 	private EntityManager entityManager;
+	private SistemaCartoesClient cartoesClient;
+	
+	private final Logger logger = LoggerFactory.getLogger(CartaoController.class);
 
-	public CartaoController(CartaoRepository cartaoRepository, EntityManager entityManager) {
+	public CartaoController(CartaoRepository cartaoRepository, EntityManager entityManager, SistemaCartoesClient cartoesClient) {
 		this.cartaoRepository = cartaoRepository;
 		this.entityManager = entityManager;
+		this.cartoesClient = cartoesClient;
 	}
 
 	@PostMapping("/{idCartao}/adicionarBiometria")
@@ -55,6 +66,7 @@ public class CartaoController {
 		return ResponseEntity.created(location).build();
 	}
 	
+	@Transactional
 	@PostMapping("/{idCartao}/bloquear")
 	public void bloquearCartao(@PathVariable UUID idCartao, HttpServletRequest request) {
 		Cartao cartao = cartaoRepository.findById(idCartao)
@@ -69,7 +81,25 @@ public class CartaoController {
 		
 		BloqueioCartao novoBloqueio = new BloqueioCartao(userAgent, enderecoIp, cartao);
 		
-		cartao.bloquear(novoBloqueio, cartaoRepository);
+		BloqueioCartao bloqueio = cartao.bloquear(novoBloqueio, cartaoRepository);
+		
+		try {
+			NovoBloqueioCartaoResponse response = cartoesClient
+				.notificarBloqueio(cartao.getNumeroCartao(false), new NovoBloqueioCartaoRequest());
+			
+			if (response.isBloqueado()) {
+				bloqueio.setSincronizado(true);
+				entityManager.merge(bloqueio);
+				return;
+			}
+			
+			logger.error("Falha ao bloquear cartão {} no sistema de cartões.", cartao.getNumeroCartao(true));
+			
+		} catch (FeignException ex) {
+			logger.error("Falha ao sincronizar bloqueio do cartão {} com o sistema de cartões.", cartao.getNumeroCartao(true));
+		
+		}
+		
 	}
 
 }
