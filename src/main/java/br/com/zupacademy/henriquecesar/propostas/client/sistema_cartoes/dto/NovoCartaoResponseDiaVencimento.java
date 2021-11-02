@@ -10,5 +10,13 @@ public class NovoCartaoResponseDiaVencimento {
 	public Integer getDia() {
 		return dia;
 	}
+	
+	@Deprecated
+	public NovoCartaoResponseDiaVencimento() {
+	}
+
+	public NovoCartaoResponseDiaVencimento(@Range(min = 1, max = 31) Integer dia) {
+		this.dia = dia;
+	}
 
 }

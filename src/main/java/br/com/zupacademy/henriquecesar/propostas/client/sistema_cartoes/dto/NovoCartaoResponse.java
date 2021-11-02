@@ -54,4 +54,19 @@ public class NovoCartaoResponse {
 		return idProposta;
 	}
 
+	@Deprecated
+	public NovoCartaoResponse() {
+	}
+
+	public NovoCartaoResponse(@NotBlank String id, @NotNull @PastOrPresent LocalDateTime emitidoEm,
+			@NotBlank String titular, @Valid NovoCartaoResponseDiaVencimento vencimento, @Positive BigDecimal limite,
+			@NotBlank String idProposta) {
+		this.id = id;
+		this.emitidoEm = emitidoEm;
+		this.titular = titular;
+		this.vencimento = vencimento;
+		this.limite = limite;
+		this.idProposta = idProposta;
+	}
+
 }
