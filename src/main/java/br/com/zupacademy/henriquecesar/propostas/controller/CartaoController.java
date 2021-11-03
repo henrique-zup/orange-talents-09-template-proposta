@@ -23,8 +23,10 @@ import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.SistemaC
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoBloqueioCartaoRequest;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoBloqueioCartaoResponse;
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaBiometriaRequest;
+import br.com.zupacademy.henriquecesar.propostas.dto.request.NovoAvisoViagemRequest;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.CartaoBloqueadoException;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.CartaoNaoEncontradoException;
+import br.com.zupacademy.henriquecesar.propostas.modelo.AvisoViagem;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Biometria;
 import br.com.zupacademy.henriquecesar.propostas.modelo.BloqueioCartao;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Cartao;
@@ -100,6 +102,23 @@ public class CartaoController {
 		
 		}
 		
+	}
+	
+	@PostMapping("/{idCartao}/avisoViagem")
+	public void avisarViagem(@PathVariable UUID idCartao, @Valid @RequestBody NovoAvisoViagemRequest request, HttpServletRequest httpRequest) {
+		Cartao cartao = cartaoRepository.findById(idCartao)
+				.orElseThrow(CartaoNaoEncontradoException::new);
+		
+		if (cartao.isBloqueado(entityManager)) {
+			throw new CartaoBloqueadoException();
+		}
+		
+		String userAgent = httpRequest.getHeader("User-Agent");
+		String enderecoIp = httpRequest.getRemoteAddr();
+		
+		AvisoViagem avisoViagem = request.toModel(cartao, userAgent, enderecoIp);
+		
+		cartao.adicionarAvisoViagem(avisoViagem, cartaoRepository);
 	}
 
 }

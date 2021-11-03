@@ -51,6 +51,9 @@ public class Cartao {
 	@OneToMany(mappedBy = "cartao", cascade = CascadeType.MERGE)
 	private List<BloqueioCartao> bloqueios;
 
+	@OneToMany(mappedBy = "cartao", cascade = CascadeType.MERGE)
+	private List<AvisoViagem> avisosViagem;
+
 	@Deprecated
 	public Cartao() {
 	}
@@ -101,5 +104,11 @@ public class Cartao {
 		.createQuery("SELECT b from BloqueioCartao b WHERE b.cartao = :cartao AND b.ativo = true")
 		.setParameter("cartao", this)
 		.getResultList().isEmpty();
+	}
+
+	public AvisoViagem adicionarAvisoViagem(AvisoViagem avisoViagem, CartaoRepository repository) {
+		avisosViagem.add(avisoViagem);
+		repository.save(this);
+		return avisosViagem.get(avisosViagem.size() - 1);
 	}
 }
