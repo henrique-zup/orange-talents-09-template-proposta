@@ -31,7 +31,7 @@ import br.com.zupacademy.henriquecesar.propostas.modelo.Cartao;
 import br.com.zupacademy.henriquecesar.propostas.repository.CartaoRepository;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @AutoConfigureDataJpa
 @TestInstance(Lifecycle.PER_CLASS)
 class CartaoControllerTest {
@@ -100,5 +100,36 @@ class CartaoControllerTest {
 			
 		mvc.perform(request).andExpect(status().isBadRequest());
 	}
-
+	
+	@Test
+	void deveBloquearCartao() throws Exception {
+		MockHttpServletRequestBuilder request = 
+				post(URI.concat(String.format("/%s/bloquear", cartaoAtual.getId())))
+					.header("User-Agent", "teste")
+					.contentType(MediaType.APPLICATION_JSON);
+			
+		mvc.perform(request).andExpect(status().isOk());
+	}
+	
+	@Test
+	void naoDeveBloquearCartaoInexistente() throws Exception {
+		String idInexistente = "2073789c-efef-450f-b8b1-2d7149d57f85";
+		
+		MockHttpServletRequestBuilder request = 
+				post(URI.concat(String.format("/%s/bloquear", idInexistente)))
+					.contentType(MediaType.APPLICATION_JSON);
+			
+		mvc.perform(request).andExpect(status().isNotFound());
+	}
+	
+	void naoDeveBloquearCartaoJaBloqueado() throws Exception {
+		deveBloquearCartao();
+		
+		MockHttpServletRequestBuilder request = 
+				post(URI.concat(String.format("/%s/bloquear", cartaoAtual.getId())))
+					.contentType(MediaType.APPLICATION_JSON);
+			
+		mvc.perform(request).andExpect(status().isUnprocessableEntity());
+	}
+	
 }
