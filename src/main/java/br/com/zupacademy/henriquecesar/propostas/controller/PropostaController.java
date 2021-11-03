@@ -1,6 +1,8 @@
 package br.com.zupacademy.henriquecesar.propostas.controller;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -21,6 +23,8 @@ import br.com.zupacademy.henriquecesar.propostas.exception.business.PropostaJaEx
 import br.com.zupacademy.henriquecesar.propostas.exception.business.PropostaNaoEncontradaException;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Proposta;
 import br.com.zupacademy.henriquecesar.propostas.repository.PropostaRepository;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 
 @RestController
 @RequestMapping("/propostas")
@@ -28,10 +32,12 @@ public class PropostaController {
 	
 	private PropostaRepository propostaRepository;
 	private AnaliseFinanceiraClient analiseFinanceiraClient;
+	private MeterRegistry meterRegistry;
 	
-	public PropostaController(PropostaRepository propostaRepository, AnaliseFinanceiraClient analiseFinanceiraClient) {
+	public PropostaController(PropostaRepository propostaRepository, AnaliseFinanceiraClient analiseFinanceiraClient, MeterRegistry meterRegistry) {
 		this.propostaRepository = propostaRepository;
 		this.analiseFinanceiraClient = analiseFinanceiraClient;
+		this.meterRegistry = meterRegistry;
 	}
 	
 	@PostMapping
@@ -50,6 +56,10 @@ public class PropostaController {
 		
 		URI location = uriBuilder.replacePath("/propostas/{id}")
 				.buildAndExpand(proposta.getId()).toUri();
+		
+		Collection<Tag> tags = new ArrayList<Tag>();
+		tags.add(Tag.of("status", proposta.getStatus().toString()));
+		meterRegistry.counter("propostas_criadas", tags).increment();
 		
 		return ResponseEntity.created(location).build();
 	}
