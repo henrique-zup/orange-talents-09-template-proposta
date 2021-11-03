@@ -14,6 +14,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoCartaoResponse;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoCartaoResponseDiaVencimento;
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaBiometriaRequest;
+import br.com.zupacademy.henriquecesar.propostas.dto.request.NovoAvisoViagemRequest;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Cartao;
 import br.com.zupacademy.henriquecesar.propostas.repository.CartaoRepository;
 
@@ -132,4 +135,67 @@ class CartaoControllerTest {
 		mvc.perform(request).andExpect(status().isUnprocessableEntity());
 	}
 	
+	
+	@Test
+	void deveCadastrarAvisoViagem() throws Exception {
+		NovoAvisoViagemRequest body = new NovoAvisoViagemRequest("Recife", LocalDateTime.now().plusDays(10L));
+		
+		MockHttpServletRequestBuilder request = 
+			post(URI.concat(String.format("/%s/avisoViagem", cartaoAtual.getId())))
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("User-Agent", "Test")
+				.content(new ObjectMapper()
+						.findAndRegisterModules()
+						.writeValueAsString(body));
+		
+		mvc.perform(request).andExpect(status().isOk());
+	}
+	
+	@Test
+	void naoDeveCadastrarAvisoViagemEmCartaoInexistente() throws Exception {
+		NovoAvisoViagemRequest body = new NovoAvisoViagemRequest("Recife", LocalDateTime.now().plusDays(10L));
+		String idInexistente = "2073789c-efef-450f-b8b1-2d7149d57f85";
+		
+		MockHttpServletRequestBuilder request = 
+			post(URI.concat(String.format("/%s/avisoViagem", idInexistente)))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper()
+						.findAndRegisterModules()
+						.writeValueAsString(body));
+			
+		mvc.perform(request).andExpect(status().isNotFound());
+	}
+	
+	@ParameterizedTest
+	@NullAndEmptySource
+	void naoDeveCadastrarAvisoViagemComDestinoInvalido(String destino) throws Exception {
+		NovoAvisoViagemRequest body = new NovoAvisoViagemRequest(destino, LocalDateTime.now().plusDays(10L));
+		
+		MockHttpServletRequestBuilder request = 
+			post(URI.concat(String.format("/%s/avisoViagem", cartaoAtual.getId())))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper()
+						.findAndRegisterModules()
+						.writeValueAsString(body));
+			
+		mvc.perform(request).andExpect(status().isBadRequest());
+	}
+	
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(strings = {"2017-03-14T12:34:56.789"})
+	void naoDeveCadastrarAvisoViagemComDataInvalida(LocalDateTime data) throws Exception {
+		NovoAvisoViagemRequest body = new NovoAvisoViagemRequest("Recife", data);
+
+		
+		MockHttpServletRequestBuilder request = 
+			post(URI.concat(String.format("/%s/avisoViagem", cartaoAtual.getId())))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper()
+						.findAndRegisterModules()
+						.writeValueAsString(body));
+			
+		mvc.perform(request).andExpect(status().isBadRequest());
+	}
+
 }
