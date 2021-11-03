@@ -22,6 +22,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.SistemaCartoesClient;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoBloqueioCartaoRequest;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoBloqueioCartaoResponse;
+import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoSistemaAvisoViagemRequest;
+import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoSistemaAvisoViagemResponse;
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaBiometriaRequest;
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovoAvisoViagemRequest;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.CartaoBloqueadoException;
@@ -104,6 +106,7 @@ public class CartaoController {
 		
 	}
 	
+	@Transactional
 	@PostMapping("/{idCartao}/avisoViagem")
 	public void avisarViagem(@PathVariable UUID idCartao, @Valid @RequestBody NovoAvisoViagemRequest request, HttpServletRequest httpRequest) {
 		Cartao cartao = cartaoRepository.findById(idCartao)
@@ -118,7 +121,24 @@ public class CartaoController {
 		
 		AvisoViagem avisoViagem = request.toModel(cartao, userAgent, enderecoIp);
 		
-		cartao.adicionarAvisoViagem(avisoViagem, cartaoRepository);
+		avisoViagem = cartao.adicionarAvisoViagem(avisoViagem, cartaoRepository);
+		
+		try {
+			NovoSistemaAvisoViagemResponse response = cartoesClient
+				.notificarAvisoViagem(cartao.getNumeroCartao(false), new NovoSistemaAvisoViagemRequest(avisoViagem));
+			
+			if (response.isNotificado()) {
+				avisoViagem.setSincronizado(true);
+				entityManager.merge(avisoViagem);
+				return;
+			}
+			
+			logger.error("Falha ao notificar aviso de viagem do cartão {} sistema de cartões.", cartao.getNumeroCartao(true));
+			
+		} catch (FeignException ex) {
+			logger.error("Falha ao notificar aviso de viagem do cartão {} sistema de cartões.", cartao.getNumeroCartao(true));
+		
+		}
 	}
 
 }
