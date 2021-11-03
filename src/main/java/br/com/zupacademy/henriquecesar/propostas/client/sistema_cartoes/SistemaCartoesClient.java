@@ -9,6 +9,8 @@ import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.Novo
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoBloqueioCartaoResponse;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoCartaoRequest;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoCartaoResponse;
+import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoSistemaAvisoViagemRequest;
+import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoSistemaAvisoViagemResponse;
 
 @FeignClient(name = "sistema-cartoes", url="${url.service.sistema-cartoes}")
 public interface SistemaCartoesClient {
@@ -18,5 +20,9 @@ public interface SistemaCartoesClient {
 	
 	@PostMapping("/cartoes/{numeroCartao}/bloqueios")
 	NovoBloqueioCartaoResponse notificarBloqueio(@PathVariable String numeroCartao, @RequestBody NovoBloqueioCartaoRequest request);
+
+	@PostMapping("/cartoes/{numeroCartao}/avisos")
+	NovoSistemaAvisoViagemResponse notificarAvisoViagem(@PathVariable String numeroCartao,
+			@RequestBody NovoSistemaAvisoViagemRequest novoSistemaAvisoViagemRequest);
 
 }
