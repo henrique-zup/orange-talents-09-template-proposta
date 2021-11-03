@@ -16,26 +16,26 @@ public class NovoAvisoViagemRequest {
 	
 	@NotNull
 	@Future
-	private LocalDateTime dataViagem;
+	private LocalDateTime dataTerminoViagem;
 	
 	@Deprecated
 	public NovoAvisoViagemRequest() {
 	}
 
-	public NovoAvisoViagemRequest(@NotBlank String destino, @Future LocalDateTime dataViagem) {
+	public NovoAvisoViagemRequest(@NotBlank String destino, @Future LocalDateTime dataTerminoViagem) {
 		this.destino = destino;
-		this.dataViagem = dataViagem;
+		this.dataTerminoViagem = dataTerminoViagem;
 	}
 
 	public AvisoViagem toModel(@NotNull Cartao cartao, @NotBlank String userAgent, @NotBlank String enderecoIp) {
-		return new AvisoViagem(destino, dataViagem, cartao, userAgent, enderecoIp);
+		return new AvisoViagem(destino, dataTerminoViagem, cartao, userAgent, enderecoIp);
 	}
 
 	public String getDestino() {
 		return destino;
 	}
 
-	public LocalDateTime getDataViagem() {
-		return dataViagem;
+	public LocalDateTime getDataTerminoViagem() {
+		return dataTerminoViagem;
 	}
 }
