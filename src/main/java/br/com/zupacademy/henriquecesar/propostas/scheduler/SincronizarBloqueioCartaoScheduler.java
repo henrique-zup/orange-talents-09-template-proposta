@@ -3,6 +3,7 @@ package br.com.zupacademy.henriquecesar.propostas.scheduler;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ public class SincronizarBloqueioCartaoScheduler {
 			.getResultList();
 	}
 	
+	@Transactional
 	@Scheduled(fixedDelayString = "${sincronizar-bloqueio-cartao.frequencia.ms.execucao}")
 	public void bloquearCartoes() {
 		List<BloqueioCartao> cartoesDesatualizados = getCartoesBloqueadosNaoAtualizados();
