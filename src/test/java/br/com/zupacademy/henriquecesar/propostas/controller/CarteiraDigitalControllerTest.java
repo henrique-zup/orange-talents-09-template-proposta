@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
@@ -82,8 +84,20 @@ public class CarteiraDigitalControllerTest {
 		cartaoAtual.associarCarteira(servico, cartaoRepository);
 	}
 	
-	@Test
-	void deveAssociarUmaCarteiraDigitalValida() throws Exception {
+	private String getBaseUrlByServico(CarteiraDigitalServico servico) {
+		switch (servico) {
+		case PAYPAL:
+			return "/%s/paypal";
+		case SAMSUNG_PAY:
+			return "/%s/samsung-pay";
+		default:
+			return "";
+		}
+	}
+	
+	@ParameterizedTest
+	@EnumSource(CarteiraDigitalServico.class)
+	void deveAssociarUmaCarteiraDigitalValida(CarteiraDigitalServico servico) throws Exception {
 		when(cartoesClient.associarCarteira(Mockito.any(), Mockito.any()))
 			.thenReturn(getRespostaBemSucedida());
 		
@@ -91,7 +105,7 @@ public class CarteiraDigitalControllerTest {
 			.thenReturn(getPropostaMock());
 		
 		MockHttpServletRequestBuilder request = 
-				post(URI.concat(String.format("/%s/paypal", cartaoAtual.getId())))
+				post(URI.concat(String.format(getBaseUrlByServico(servico), cartaoAtual.getId())))
 					.contentType(MediaType.APPLICATION_JSON);
 
 		mockMvc.perform(request).andExpect(status().isCreated())
@@ -101,18 +115,19 @@ public class CarteiraDigitalControllerTest {
 		));
 	}
 
-	@Test
-	void naoDeveAssociarUmaCarteiraDigitalDuplicada() throws Exception {
+	@ParameterizedTest
+	@EnumSource(CarteiraDigitalServico.class)
+	void naoDeveAssociarUmaCarteiraDigitalDuplicada(CarteiraDigitalServico servico) throws Exception {
 		when(cartoesClient.associarCarteira(Mockito.any(), Mockito.any()))
 			.thenReturn(getRespostaBemSucedida());
 	
 		when(propostaRepository.findByCartao(Mockito.any()))
 			.thenReturn(getPropostaMock());
 		
-		cadastraCarteiraNoBanco(CarteiraDigitalServico.PAYPAL);
+		cadastraCarteiraNoBanco(servico);
 		
 		MockHttpServletRequestBuilder request = 
-				post(URI.concat(String.format("/%s/paypal", cartaoAtual.getId())))
+				post(URI.concat(String.format(getBaseUrlByServico(servico), cartaoAtual.getId())))
 					.contentType(MediaType.APPLICATION_JSON);
 	
 		mockMvc.perform(request).andExpect(status().isUnprocessableEntity());
@@ -128,8 +143,6 @@ public class CarteiraDigitalControllerTest {
 
 		when(propostaRepository.findByCartao(Mockito.any()))
 			.thenReturn(getPropostaMock());
-		
-		cadastraCarteiraNoBanco(CarteiraDigitalServico.PAYPAL);
 		
 		MockHttpServletRequestBuilder request = 
 				post(URI.concat(String.format("/%s/paypal", cartaoAtual.getId())))
