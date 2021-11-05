@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,6 @@ public class CarteiraDigitalController {
 		this.client = client;
 	}
 
-	@Transactional
 	@PostMapping("/{idCartao}/paypal")
 	public ResponseEntity<?> associarPaypal(@PathVariable UUID idCartao, UriComponentsBuilder uriBuilder) {
 		Cartao cartao = cartaoRepository.findById(idCartao)
@@ -59,12 +57,35 @@ public class CarteiraDigitalController {
 		}
 		
 		String email = propostaRepository.findByCartao(cartao).get().getEmail();
+		
+		NovaInclusaoCarteiraRequest clientRequest = new NovaInclusaoCarteiraRequest(
+				email, CarteiraDigitalServico.PAYPAL);
+		
+		return associarCarteiraDigital(cartao, clientRequest, uriBuilder);
+	}
+	
+	@PostMapping("/{idCartao}/samsung-pay")
+	public ResponseEntity<?> associarSamsungPay(@PathVariable UUID idCartao, UriComponentsBuilder uriBuilder) {
+		Cartao cartao = cartaoRepository.findById(idCartao)
+				.orElseThrow(CartaoNaoEncontradoException::new);
+		
+		if (cartao.isBloqueado(entityManager)) {
+			throw new CartaoBloqueadoException();
+		}
+		
+		String email = propostaRepository.findByCartao(cartao).get().getEmail();
+		
+		NovaInclusaoCarteiraRequest clientRequest = new NovaInclusaoCarteiraRequest(
+				email, CarteiraDigitalServico.SAMSUNG_PAY);
+		
+		return associarCarteiraDigital(cartao, clientRequest, uriBuilder);
+	}
+	
+	
+	private ResponseEntity<?> associarCarteiraDigital(Cartao cartao, NovaInclusaoCarteiraRequest clientRequest, UriComponentsBuilder uriBuilder) {
 		String numeroCartao = cartao.getNumeroCartao(Exibicao.NAO_OFUSCADO);
 		
 		try {
-			NovaInclusaoCarteiraRequest clientRequest = new NovaInclusaoCarteiraRequest(
-					email, CarteiraDigitalServico.PAYPAL);
-			
 			NovaInclusaoCarteiraResponse response = client
 				.associarCarteira(numeroCartao, clientRequest);
 			
@@ -88,7 +109,6 @@ public class CarteiraDigitalController {
 			logger.error("Falha ao sincronizar carteira digital com o sistema legado.");
 			throw new CarteiraNaoAssociadaException();
 		}
-
 	}
 
 }
