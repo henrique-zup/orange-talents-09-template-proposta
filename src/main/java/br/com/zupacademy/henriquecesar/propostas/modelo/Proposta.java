@@ -112,4 +112,8 @@ public class Proposta {
 		repository.save(this);
 	}
 
+	public String getEmail() {
+		return email;
+	}
+
 }
