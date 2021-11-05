@@ -12,4 +12,12 @@ public class NovaInclusaoCarteiraResponse {
 		return resultado.equals(NovaInclusaoCarteiraResponseStatus.ASSOCIADA);
 	}
 
+	@Deprecated
+	public NovaInclusaoCarteiraResponse() {
+	}
+
+	public NovaInclusaoCarteiraResponse(NovaInclusaoCarteiraResponseStatus resultado) {
+		this.resultado = resultado;
+	}
+
 }

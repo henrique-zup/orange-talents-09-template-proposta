@@ -2,6 +2,7 @@ package br.com.zupacademy.henriquecesar.propostas.modelo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,7 +57,7 @@ public class Cartao {
 	private List<AvisoViagem> avisosViagem;
 
 	@OneToMany(mappedBy = "cartao", cascade = CascadeType.MERGE)
-	private List<CarteiraDigital> carteiras;
+	private List<CarteiraDigital> carteiras = new ArrayList<>();
 
 	@Deprecated
 	public Cartao() {

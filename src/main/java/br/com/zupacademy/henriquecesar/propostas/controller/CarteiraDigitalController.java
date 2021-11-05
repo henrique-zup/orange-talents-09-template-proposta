@@ -1,6 +1,7 @@
 package br.com.zupacademy.henriquecesar.propostas.controller;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
@@ -70,8 +71,11 @@ public class CarteiraDigitalController {
 			if (response.isAssociada()) {
 				CarteiraDigital carteira = cartao.associarCarteira(clientRequest.getCarteira(), cartaoRepository);
 				
-				URI location = uriBuilder.replacePath("/propostas/{id}")
-						.buildAndExpand(carteira.getId()).toUri();
+				URI location = uriBuilder.replacePath("/cartoes/{idCartao}/carteiras/{idCarteira}")
+					.buildAndExpand(
+						Map.of("idCartao", cartao.getId(),
+								"idCarteira", carteira.getId()))
+					.toUri();
 				
 				return ResponseEntity.created(location).build();
 				
