@@ -19,6 +19,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Range;
 
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoCartaoResponse;
+import br.com.zupacademy.henriquecesar.propostas.exception.business.CarteiraJaAssociadaException;
 import br.com.zupacademy.henriquecesar.propostas.repository.CartaoRepository;
 
 @Entity
@@ -54,6 +55,9 @@ public class Cartao {
 	@OneToMany(mappedBy = "cartao", cascade = CascadeType.MERGE)
 	private List<AvisoViagem> avisosViagem;
 
+	@OneToMany(mappedBy = "cartao", cascade = CascadeType.MERGE)
+	private List<CarteiraDigital> carteiras;
+
 	@Deprecated
 	public Cartao() {
 	}
@@ -87,6 +91,10 @@ public class Cartao {
 		return id;
 	}
 	
+	public List<CarteiraDigital> getCarteiras() {
+		return carteiras;
+	}
+	
 	public Biometria adicionarBiometria(Biometria biometria, CartaoRepository repository) {
 		this.biometrias.add(biometria);
 		repository.save(this);
@@ -110,5 +118,17 @@ public class Cartao {
 		avisosViagem.add(avisoViagem);
 		repository.save(this);
 		return avisosViagem.get(avisosViagem.size() - 1);
+	}
+
+	public CarteiraDigital associarCarteira(CarteiraDigitalServico servico, CartaoRepository repository) {
+		for (CarteiraDigital carteira : this.getCarteiras()) {
+			if (carteira.isServicoEquals(servico)) {
+				throw new CarteiraJaAssociadaException();
+			}
+		}
+		
+		carteiras.add(new CarteiraDigital(servico, this));
+		repository.save(this);
+		return carteiras.get(carteiras.size() - 1);
 	}
 }
