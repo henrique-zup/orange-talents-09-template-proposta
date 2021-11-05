@@ -75,8 +75,8 @@ public class Cartao {
 				response.getVencimento().getDia());
 	}
 	
-	public String getNumeroCartao(boolean ofuscado) {
-		if (ofuscado) {
+	public String getNumeroCartao(Exibicao exibicao) {
+		if (exibicao.equals(Exibicao.OFUSCADO)) {
 			return String.format("%1$sXX-XXXX-XXXX-%2$s", 
 					numeroCartao.substring(0, 2), numeroCartao.substring(15));
 		}

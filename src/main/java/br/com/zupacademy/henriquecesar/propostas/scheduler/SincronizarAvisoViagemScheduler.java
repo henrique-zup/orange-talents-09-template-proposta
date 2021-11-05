@@ -15,6 +15,7 @@ import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.Novo
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoSistemaAvisoViagemResponse;
 import br.com.zupacademy.henriquecesar.propostas.modelo.AvisoViagem;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Cartao;
+import br.com.zupacademy.henriquecesar.propostas.modelo.Exibicao;
 import feign.FeignException;
 
 @Component
@@ -22,7 +23,6 @@ public class SincronizarAvisoViagemScheduler {
 	
 	private EntityManager entityManager;
 	private SistemaCartoesClient sistemaCartoesClient;
-	private final boolean NAO_OFUSCADO = false;
 	private final Logger logger = LoggerFactory.getLogger(SincronizarAvisoViagemScheduler.class);
 
 	public SincronizarAvisoViagemScheduler(EntityManager entityManager, SistemaCartoesClient sistemaCartoesClient) {
@@ -47,17 +47,17 @@ public class SincronizarAvisoViagemScheduler {
 			
 			try {
 				NovoSistemaAvisoViagemResponse response = sistemaCartoesClient
-					.notificarAvisoViagem(cartao.getNumeroCartao(NAO_OFUSCADO), new NovoSistemaAvisoViagemRequest(aviso));
+					.notificarAvisoViagem(cartao.getNumeroCartao(Exibicao.NAO_OFUSCADO), new NovoSistemaAvisoViagemRequest(aviso));
 				
 				if (response.isNotificado()) {
 					aviso.setSincronizado(true);
 					entityManager.merge(aviso);
 				} else {
-					logger.error("Falha ao notificar aviso de viagem do cartão {} sistema de cartões.", cartao.getNumeroCartao(true));
+					logger.error("Falha ao notificar aviso de viagem do cartão {} sistema de cartões.", cartao.getNumeroCartao(Exibicao.OFUSCADO));
 				}
 
 			} catch (FeignException e) {
-				logger.error("Falha ao notificar aviso de viagem do cartão {} sistema de cartões.", cartao.getNumeroCartao(true));
+				logger.error("Falha ao notificar aviso de viagem do cartão {} sistema de cartões.", cartao.getNumeroCartao(Exibicao.OFUSCADO));
 			
 			}
 		}

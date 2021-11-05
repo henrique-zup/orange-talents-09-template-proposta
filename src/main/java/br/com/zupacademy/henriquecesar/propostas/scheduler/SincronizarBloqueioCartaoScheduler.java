@@ -15,6 +15,7 @@ import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.Novo
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoBloqueioCartaoResponse;
 import br.com.zupacademy.henriquecesar.propostas.modelo.BloqueioCartao;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Cartao;
+import br.com.zupacademy.henriquecesar.propostas.modelo.Exibicao;
 import feign.FeignException;
 
 @Component
@@ -22,7 +23,6 @@ public class SincronizarBloqueioCartaoScheduler {
 	
 	private EntityManager entityManager;
 	private SistemaCartoesClient sistemaCartoesClient;
-	private final boolean NAO_OFUSCADO = false;
 	private final Logger logger = LoggerFactory.getLogger(SincronizarBloqueioCartaoScheduler.class);
 
 	public SincronizarBloqueioCartaoScheduler(EntityManager entityManager, SistemaCartoesClient sistemaCartoesClient) {
@@ -47,17 +47,17 @@ public class SincronizarBloqueioCartaoScheduler {
 			
 			try {
 				NovoBloqueioCartaoResponse response = sistemaCartoesClient
-					.notificarBloqueio(cartao.getNumeroCartao(NAO_OFUSCADO), new NovoBloqueioCartaoRequest());
+					.notificarBloqueio(cartao.getNumeroCartao(Exibicao.NAO_OFUSCADO), new NovoBloqueioCartaoRequest());
 				
 				if (response.isBloqueado()) {
 					bloqueio.setSincronizado(true);
 					entityManager.merge(bloqueio);
 				} else {
-					logger.error("Falha ao bloquear cartão {} no sistema de cartões.", cartao.getNumeroCartao(true));
+					logger.error("Falha ao bloquear cartão {} no sistema de cartões.", cartao.getNumeroCartao(Exibicao.OFUSCADO));
 				}
 
 			} catch (FeignException e) {
-				logger.error("Falha ao sincronizar bloqueio do cartão {} com o sistema de cartões.", cartao.getNumeroCartao(true));
+				logger.error("Falha ao sincronizar bloqueio do cartão {} com o sistema de cartões.", cartao.getNumeroCartao(Exibicao.OFUSCADO));
 			
 			}
 		}

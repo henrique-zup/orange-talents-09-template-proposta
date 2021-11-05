@@ -32,6 +32,7 @@ import br.com.zupacademy.henriquecesar.propostas.modelo.AvisoViagem;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Biometria;
 import br.com.zupacademy.henriquecesar.propostas.modelo.BloqueioCartao;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Cartao;
+import br.com.zupacademy.henriquecesar.propostas.modelo.Exibicao;
 import br.com.zupacademy.henriquecesar.propostas.repository.CartaoRepository;
 import feign.FeignException;
 
@@ -89,7 +90,7 @@ public class CartaoController {
 		
 		try {
 			NovoBloqueioCartaoResponse response = cartoesClient
-				.notificarBloqueio(cartao.getNumeroCartao(false), new NovoBloqueioCartaoRequest());
+				.notificarBloqueio(cartao.getNumeroCartao(Exibicao.NAO_OFUSCADO), new NovoBloqueioCartaoRequest());
 			
 			if (response.isBloqueado()) {
 				bloqueio.setSincronizado(true);
@@ -97,10 +98,10 @@ public class CartaoController {
 				return;
 			}
 			
-			logger.error("Falha ao bloquear cartão {} no sistema de cartões.", cartao.getNumeroCartao(true));
+			logger.error("Falha ao bloquear cartão {} no sistema de cartões.", cartao.getNumeroCartao(Exibicao.OFUSCADO));
 			
 		} catch (FeignException ex) {
-			logger.error("Falha ao sincronizar bloqueio do cartão {} com o sistema de cartões.", cartao.getNumeroCartao(true));
+			logger.error("Falha ao sincronizar bloqueio do cartão {} com o sistema de cartões.", cartao.getNumeroCartao(Exibicao.OFUSCADO));
 		
 		}
 		
@@ -125,7 +126,7 @@ public class CartaoController {
 		
 		try {
 			NovoSistemaAvisoViagemResponse response = cartoesClient
-				.notificarAvisoViagem(cartao.getNumeroCartao(false), new NovoSistemaAvisoViagemRequest(avisoViagem));
+				.notificarAvisoViagem(cartao.getNumeroCartao(Exibicao.NAO_OFUSCADO), new NovoSistemaAvisoViagemRequest(avisoViagem));
 			
 			if (response.isNotificado()) {
 				avisoViagem.setSincronizado(true);
@@ -133,10 +134,10 @@ public class CartaoController {
 				return;
 			}
 			
-			logger.error("Falha ao notificar aviso de viagem do cartão {} sistema de cartões.", cartao.getNumeroCartao(true));
+			logger.error("Falha ao notificar aviso de viagem do cartão {} sistema de cartões.", cartao.getNumeroCartao(Exibicao.OFUSCADO));
 			
 		} catch (FeignException ex) {
-			logger.error("Falha ao notificar aviso de viagem do cartão {} sistema de cartões.", cartao.getNumeroCartao(true));
+			logger.error("Falha ao notificar aviso de viagem do cartão {} sistema de cartões.", cartao.getNumeroCartao(Exibicao.OFUSCADO));
 		
 		}
 	}

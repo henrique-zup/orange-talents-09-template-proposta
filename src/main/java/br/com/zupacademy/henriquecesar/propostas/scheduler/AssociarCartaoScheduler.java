@@ -13,6 +13,7 @@ import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.SistemaC
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoCartaoRequest;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoCartaoResponse;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Cartao;
+import br.com.zupacademy.henriquecesar.propostas.modelo.Exibicao;
 import br.com.zupacademy.henriquecesar.propostas.modelo.Proposta;
 import br.com.zupacademy.henriquecesar.propostas.modelo.PropostaStatus;
 import br.com.zupacademy.henriquecesar.propostas.repository.PropostaRepository;
@@ -32,7 +33,6 @@ public class AssociarCartaoScheduler {
 
 	@Value("${associar-cartao.proposta.limite.registros}")
 	private Integer LIMITE_REGISTROS;
-	private final boolean OFUSCAR_DIGITOS = true;
 	private final Logger logger = LoggerFactory.getLogger(AssociarCartaoScheduler.class);
 
 	private List<Proposta> recuperarNovasPropostasAprovadas() {
@@ -50,7 +50,7 @@ public class AssociarCartaoScheduler {
 				Cartao novoCartao = Cartao.buildCartao(response);
 				proposta.adicionaCartao(novoCartao, propostaRepository);
 				logger.info("A proposta {} foi associada ao cartão {} com sucesso.", proposta.getId(),
-						novoCartao.getNumeroCartao(OFUSCAR_DIGITOS));
+						novoCartao.getNumeroCartao(Exibicao.OFUSCADO));
 				
 			} catch (FeignClientException ex) {
 				logger.warn("Solicitação para a proposta {} ainda não foi processada.", proposta.getId());
