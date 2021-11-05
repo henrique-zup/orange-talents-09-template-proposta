@@ -41,7 +41,7 @@ public class AssociarCartaoScheduler {
 	}
 
 	@Scheduled(fixedDelayString = "${associar-cartao.frequencia.ms.execucao}")
-	private void associarCartoes() {
+	protected void associarCartoes() {
 		List<Proposta> novasPropostasAprovadas = recuperarNovasPropostasAprovadas();
 
 		for (Proposta proposta : novasPropostasAprovadas) {

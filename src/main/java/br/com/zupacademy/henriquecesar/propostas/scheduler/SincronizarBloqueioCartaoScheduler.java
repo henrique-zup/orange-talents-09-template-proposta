@@ -38,7 +38,7 @@ public class SincronizarBloqueioCartaoScheduler {
 	
 	@Transactional
 	@Scheduled(fixedDelayString = "${sincronizar-bloqueio-cartao.frequencia.ms.execucao}")
-	public void bloquearCartoes() {
+	protected void bloquearCartoes() {
 		List<BloqueioCartao> cartoesDesatualizados = getCartoesBloqueadosNaoAtualizados();
 		
 		for (BloqueioCartao bloqueio : cartoesDesatualizados) {

@@ -38,7 +38,7 @@ public class SincronizarAvisoViagemScheduler {
 	
 	@Transactional
 	@Scheduled(fixedDelayString = "${sincronizar-aviso-viagem.frequencia.ms.execucao}")
-	public void notificarAvisoViagem() {
+	protected void notificarAvisoViagem() {
 		List<AvisoViagem> avisosNaoSincronizados = getAvisosNaoSincronizados();
 		
 		for (AvisoViagem aviso : avisosNaoSincronizados) {
