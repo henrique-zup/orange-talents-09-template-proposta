@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.BusinessException;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.CartaoBloqueadoException;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.CartaoNaoEncontradoException;
+import br.com.zupacademy.henriquecesar.propostas.exception.business.CarteiraJaAssociadaException;
+import br.com.zupacademy.henriquecesar.propostas.exception.business.CarteiraNaoAssociadaException;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.PropostaJaExisteException;
 import br.com.zupacademy.henriquecesar.propostas.exception.business.PropostaNaoEncontradaException;
 
@@ -21,7 +23,8 @@ public class GlobalControllerExceptionHandler {
         return ApiErrorResponse.buildFromMethodArgumentNotValidException(ex);
     }
     
-    @ExceptionHandler(value = { PropostaJaExisteException.class, CartaoBloqueadoException.class })
+    @ExceptionHandler(value = { PropostaJaExisteException.class, CartaoBloqueadoException.class,
+    		CarteiraJaAssociadaException.class, CarteiraNaoAssociadaException.class })
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     public ApiErrorResponse requestUnprocessableException(BusinessException ex) {
         return ApiErrorResponse.buildFromBusinessException(ex);
