@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovaInclusaoCarteiraRequest;
+import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovaInclusaoCarteiraResponse;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoBloqueioCartaoRequest;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoBloqueioCartaoResponse;
 import br.com.zupacademy.henriquecesar.propostas.client.sistema_cartoes.dto.NovoCartaoRequest;
@@ -24,5 +26,8 @@ public interface SistemaCartoesClient {
 	@PostMapping("/cartoes/{numeroCartao}/avisos")
 	NovoSistemaAvisoViagemResponse notificarAvisoViagem(@PathVariable String numeroCartao,
 			@RequestBody NovoSistemaAvisoViagemRequest novoSistemaAvisoViagemRequest);
+
+	@PostMapping("/cartoes/{numeroCartao}/carteiras")
+	NovaInclusaoCarteiraResponse associarCarteira(@PathVariable String numeroCartao, @RequestBody NovaInclusaoCarteiraRequest novaInclusaoCarteiraRequest);
 
 }
