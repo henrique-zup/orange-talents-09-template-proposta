@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 import br.com.zupacademy.henriquecesar.propostas.client.analise_financeira.AnaliseFinanceiraClient;
 import br.com.zupacademy.henriquecesar.propostas.client.analise_financeira.dto.NovaAnaliseFinanceiraRequest;
 import br.com.zupacademy.henriquecesar.propostas.client.analise_financeira.dto.NovaAnaliseFinanceiraResponse;
-import br.com.zupacademy.henriquecesar.propostas.common.annotation.CpfOrCnpj;
+import br.com.zupacademy.henriquecesar.propostas.common.util.Criptografia;
 import br.com.zupacademy.henriquecesar.propostas.dto.request.NovaPropostaRequest;
 import br.com.zupacademy.henriquecesar.propostas.repository.PropostaRepository;
 import feign.FeignException;
@@ -30,8 +30,11 @@ public class Proposta {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@CpfOrCnpj
+	@NotBlank
 	private String documento;
+	
+	@NotBlank
+	private String documentoHash;
 
 	@Email
 	@NotBlank
@@ -58,7 +61,8 @@ public class Proposta {
 
 	public Proposta(String documento, @Email @NotBlank String email, @NotBlank String nome, 
 			@NotBlank String endereco, @NotNull BigDecimal salario) {
-		this.documento = documento;
+		this.documento = Criptografia.criptografar(documento);
+		this.documentoHash = Criptografia.hash(documento);
 		this.email = email;
 		this.nome = nome;
 		this.endereco = endereco;
@@ -80,7 +84,11 @@ public class Proposta {
 	}
 	
 	public String getDocumento() {
-		return documento;
+		return Criptografia.descriptografar(documento);
+	}
+	
+	public String getDocumentoHash() {
+		return documentoHash;
 	}
 	
 	public String getNome() {
@@ -91,9 +99,9 @@ public class Proposta {
 		return status;
 	}
 
-    public boolean existeProposta(PropostaRepository propostaRepository) {
-        return propostaRepository.findByDocumento(documento).isPresent();
-    }
+	public boolean existeProposta(PropostaRepository propostaRepository) {
+		return propostaRepository.findByDocumentoHash(documentoHash).isPresent();
+	}
 
 	public void realizaAnaliseFinanceira(AnaliseFinanceiraClient analiseFinanceiraClient, PropostaRepository repository) {
 		try {

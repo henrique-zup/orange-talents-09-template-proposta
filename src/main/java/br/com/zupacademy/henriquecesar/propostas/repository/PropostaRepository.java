@@ -12,7 +12,7 @@ import br.com.zupacademy.henriquecesar.propostas.modelo.PropostaStatus;
 
 public interface PropostaRepository extends CrudRepository<Proposta, Long>{
 
-    Optional<Proposta> findByDocumento(String documento);
+    Optional<Proposta> findByDocumentoHash(String documento);
 
 	List<Proposta> findByCartaoIsNullAndStatusEquals(PropostaStatus status, Pageable pageRequest);
 	
